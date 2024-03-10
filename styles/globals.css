@@ -1,0 +1,139 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: Roboto;
+}
+
+body {
+  background-image: url("../public/Mask.svg");
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+
+.roboto-thin {
+  font-family: "Roboto", sans-serif;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.roboto-thin-italic {
+  font-family: "Roboto", sans-serif;
+  font-weight: 100;
+  font-style: italic;
+}
+
+.roboto-light {
+  font-family: "Roboto", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.roboto-light-italic {
+  font-family: "Roboto", sans-serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.roboto-regular {
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.roboto-regular-italic {
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.roboto-medium {
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.roboto-medium-italic {
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.roboto-bold {
+  font-family: "Roboto", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.roboto-bold-italic {
+  font-family: "Roboto", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.roboto-black {
+  font-family: "Roboto", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+}
+
+.roboto-black-italic {
+  font-family: "Roboto", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+}
+
+input[type="radio"] {
+  /* Oculta o input padrão */
+  display: none;
+}
+
+input[type="radio"] + label {
+  position: relative;
+  padding-left: 30px; /* Ajuste o tamanho do input aqui */
+  cursor: pointer;
+  display: inline-block;
+  line-height: 20px; /* Ajuste conforme necessário para centralizar verticalmente */
+}
+
+input[type="radio"] + label:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px; /* Ajuste o tamanho do círculo externo aqui */
+  height: 20px; /* Ajuste o tamanho do círculo externo aqui */
+  border: 2px solid #333; /* Cor do círculo externo */
+  border-radius: 50%;
+  background-color: transparent; /* Cor de fundo do círculo externo */
+}
+
+input[type="radio"]:checked + label:before {
+  background-color: transparent;
+  border-color: #008b57;
+}
+
+/* Estilização do ponto interno quando está selecionado */
+input[type="radio"]:checked + label:after {
+  content: "";
+  position: absolute;
+  left: 4px; /* Ajuste a posição do ponto interno aqui */
+  top: 4px; /* Ajuste a posição do ponto interno aqui */
+  width: 12px; /* Ajuste o tamanho do ponto interno aqui */
+  height: 12px; /* Ajuste o tamanho do ponto interno aqui */
+  border-radius: 50%;
+  background-color: #008b57; /* Cor do ponto interno */
+}
