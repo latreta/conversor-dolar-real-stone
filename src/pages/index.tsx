@@ -1,96 +1,140 @@
-import { FormEvent } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import StoneLogo from "../../components/StoneLogo";
-import { TransferIcon } from "../../components/TransferIcon";
+import { GetCotacao } from "../services/cotacao.service";
+import { CotacaoResponse } from "../types/CotacaoResponse";
+import { ConvertForm } from "../../components/ConvertForm";
+import { ResultContent } from "../../components/ResultContent";
+
+const months = [
+  "janeiro",
+  "fevereiro",
+  "março",
+  "abril",
+  "maio",
+  "junho",
+  "julho",
+  "agosto",
+  "setembro",
+  "outubro",
+  "novembro",
+  "dezembro",
+];
+
+function FormatDate(date: Date): string {
+  let formattedDate = `${date.getDay()} de ${
+    months[date.getMonth()]
+  } de ${date.getFullYear()}`;
+
+  return formattedDate;
+}
+
+function FormatTime(date: Date): string {
+  let formattedTime = `${date.getUTCHours()}:${date.getUTCMinutes()} UTC`;
+  return formattedTime;
+}
+
+function CalculateMoneyPurchase(
+  purchaseValue: number,
+  tax: number,
+  iof: number,
+  cotacaoDolar: number
+) {
+  const impostoCalculado = purchaseValue * tax;
+  const iofCalculado = cotacaoDolar * iof;
+  return (purchaseValue + impostoCalculado) * (cotacaoDolar * 1 + iofCalculado);
+}
+
+// [(Valor em dólar) + (imposto do Estado) + (IOF de transações internacionais)] x (valor do dólar)
+function CalculateCreditCardPurchase(
+  purchaseValue: number,
+  tax: number,
+  iof: number,
+  dolarValue: number
+) {
+  const impostoCalculado = purchaseValue * tax;
+  const iofCalculado = purchaseValue * iof;
+  return (purchaseValue + impostoCalculado + iofCalculado) * dolarValue;
+}
 
 export default function Page() {
-  const date = "14 de janeiro 2024";
-  const time = "21:00 UTC";
+  const [date, setDate] = useState<string>("");
+  const [time, setTime] = useState<string>("");
+  const [cotacao, setCotacao] = useState<CotacaoResponse>();
+  const [state, setState] = useState<"CONVERT" | "RESULT">("CONVERT");
+  const [convertedValue, setConvertedValue] = useState<number>(0);
+  const [tax, setTax] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState("");
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = ({ value, tax, type }: any) => {
+    const valor = Number.parseInt(value);
+    const percentageTax = Number.parseInt(tax) / 100;
+    setTax(Number.parseFloat(tax));
+    const IOF = 0.05;
+    setPaymentMethod(type);
+    if (type === "money") {
+      const calculatedValue = CalculateMoneyPurchase(
+        valor,
+        percentageTax,
+        IOF,
+        cotacao.USDBRL.bid
+      );
+      setConvertedValue(calculatedValue);
+      setState("RESULT");
+    } else if (type === "card") {
+      const calculatedValue = CalculateCreditCardPurchase(
+        valor,
+        percentageTax,
+        IOF,
+        cotacao.USDBRL.bid
+      );
+      setConvertedValue(calculatedValue);
+      setState("RESULT");
+      return;
+    }
   };
+
+  useEffect(() => {
+    GetCotacao()
+      .then((response) => response.data)
+      .then((data) => {
+        setCotacao(data);
+        let date = new Date(data.USDBRL.timestamp * 1000);
+        let formattedDate = FormatDate(date);
+        let formattedTime = FormatTime(date);
+        setTime(formattedTime);
+        setDate(formattedDate);
+      })
+      .catch((err) => console.error(err.message));
+  }, []);
 
   return (
     <div className="m-14">
-      <form onSubmit={handleSubmit}>
-        <div className="flex items-center gap-x-12">
-          <StoneLogo />
-          <div className="flex flex-col gap-y-1">
-            <div className="flex gap-x-6 text-gray-darker text-lg">
-              <span>{date}</span>
-              <span>|</span>
-              <span>{time}</span>
-            </div>
-            <div className="text-gray-light text-sm">
-              Dados de câmbio disponibilizados pela Morningstar.
-            </div>
+      <section className="flex items-center gap-x-12">
+        <StoneLogo />
+        <div className="flex flex-col gap-y-1">
+          <div className="flex gap-x-6 text-gray-darker text-lg">
+            <span>{date}</span>
+            <span>|</span>
+            <span>{time}</span>
+          </div>
+          <div className="text-gray-light text-sm">
+            Dados de câmbio disponibilizados pela Morningstar.
           </div>
         </div>
+      </section>
 
-        <div className="flex mt-28 gap-x-6">
-          <div className="flex flex-col gap-2.5">
-            <label className="font-bold text-lg">Dólar</label>
-            <input
-              type="text"
-              placeholder="$ 1,00"
-              className="h-[56px] w-[168px] border-2 p-4 border-gray-light border-opacity-20 rounded-md"
-            ></input>
-          </div>
-          <div className="flex flex-col gap-2.5">
-            <label className="font-bold text-lg">Taxa do estado</label>
-            <input
-              type="text"
-              placeholder="0 %"
-              radioGroup="purchasetype"
-              className="h-[56px] w-[168px] border-2 p-4 border-gray-light border-opacity-20 rounded-md"
-            ></input>
-          </div>
-        </div>
-        <div className="mt-8">
-          <div>
-            <label className="font-bold">Tipo de compra</label>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                columnGap: "16px",
-              }}
-            >
-              <div style={{ display: "flex", columnGap: "8px" }}>
-                <input
-                  id="money"
-                  type="radio"
-                  value="money"
-                  name="purchase_type"
-                ></input>
-                <label htmlFor="money" style={{ fontSize: "16px" }}>
-                  Dinheiro
-                </label>
-              </div>
-              <div style={{ display: "flex", columnGap: "8px" }}>
-                <input
-                  id="card"
-                  type="radio"
-                  value="card"
-                  name="purchase_type"
-                ></input>
-                <label htmlFor="card" style={{ fontSize: "16px" }}>
-                  Cartão
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="mt-8">
-          <button
-            type="submit"
-            className="flex gap-x-4 bg-gray-light text-white p-4 rounded-md text-lg font-semibold"
-          >
-            <TransferIcon />
-            <span>Converter</span>
-          </button>
-        </div>
-      </form>
+      {state === "CONVERT" ? <ConvertForm onSubmit={handleSubmit} /> : null}
+      {state === "RESULT" ? (
+        <ResultContent
+          onBackButton={() => setState("CONVERT")}
+          tax={tax}
+          dolar={cotacao.USDBRL?.bid * 1}
+          convertedValue={convertedValue}
+          paymentMethod={paymentMethod}
+        />
+      ) : null}
     </div>
   );
 }

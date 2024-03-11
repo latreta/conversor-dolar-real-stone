@@ -16,7 +16,7 @@
   "devDependencies": {
     "@types/react": "^17.0.37",
     "autoprefixer": "^10.4.18",
-    "axios": "^0.24.0",
+    "axios": "^1.6.7",
     "jest": "^27.4.3",
     "next": "^12.0.7",
     "postcss": "^8.4.35",
