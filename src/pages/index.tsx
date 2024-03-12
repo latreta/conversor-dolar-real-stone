@@ -6,6 +6,15 @@ import { GetCotacao } from "../services/cotacao.service";
 import { CotacaoResponse } from "../types/CotacaoResponse";
 import { ConvertForm } from "../../components/ConvertForm";
 import { ResultContent } from "../../components/ResultContent";
+import api from "../services/api/api";
+
+interface ResponseData {
+  valor?: number;
+  tax?: number;
+  type?: "card" | "money";
+  dolar?: number;
+  message?: string;
+}
 
 const months = [
   "janeiro",
@@ -35,29 +44,6 @@ function FormatTime(date: Date): string {
   return formattedTime;
 }
 
-function CalculateMoneyPurchase(
-  purchaseValue: number,
-  tax: number,
-  iof: number,
-  cotacaoDolar: number
-) {
-  const impostoCalculado = purchaseValue * tax;
-  const iofCalculado = cotacaoDolar * iof;
-  return (purchaseValue + impostoCalculado) * (cotacaoDolar * 1 + iofCalculado);
-}
-
-// [(Valor em dólar) + (imposto do Estado) + (IOF de transações internacionais)] x (valor do dólar)
-function CalculateCreditCardPurchase(
-  purchaseValue: number,
-  tax: number,
-  iof: number,
-  dolarValue: number
-) {
-  const impostoCalculado = purchaseValue * tax;
-  const iofCalculado = purchaseValue * iof;
-  return (purchaseValue + impostoCalculado + iofCalculado) * dolarValue;
-}
-
 export default function Page() {
   const [date, setDate] = useState<string>("");
   const [time, setTime] = useState<string>("");
@@ -72,27 +58,22 @@ export default function Page() {
     const percentageTax = Number.parseInt(tax) / 100;
     setTax(Number.parseFloat(tax));
     const IOF = 0.05;
-    setPaymentMethod(type);
-    if (type === "money") {
-      const calculatedValue = CalculateMoneyPurchase(
-        valor,
-        percentageTax,
-        IOF,
-        cotacao.USDBRL.bid
-      );
-      setConvertedValue(calculatedValue);
-      setState("RESULT");
-    } else if (type === "card") {
-      const calculatedValue = CalculateCreditCardPurchase(
-        valor,
-        percentageTax,
-        IOF,
-        cotacao.USDBRL.bid
-      );
-      setConvertedValue(calculatedValue);
-      setState("RESULT");
-      return;
-    }
+    api
+      .post("", {
+        value: valor,
+        tax: percentageTax,
+        type: type,
+        iof: IOF,
+        cotacao: cotacao,
+      })
+      .then((response) => response.data)
+      .then(({ valor, tax, type, dolar }: ResponseData) => {
+        setConvertedValue(valor);
+        setTax(tax);
+        setState("RESULT");
+      });
+    // setPaymentMethod(type);
+    //
   };
 
   useEffect(() => {

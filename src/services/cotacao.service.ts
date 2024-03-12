@@ -1,5 +1,5 @@
-import api from "./api";
+import cotacaoApi from "./api/cotacao.api";
 
 export function GetCotacao() {
-  return api.get("/");
+  return cotacaoApi.get("/");
 }
