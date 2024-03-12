@@ -38,17 +38,12 @@ export default function handler(
   const { value, tax, iof, type, cotacao } = req.body;
 
   if (type === "money") {
-    const calculatedValue = CalculateMoneyPurchase(
-      value,
-      tax,
-      iof,
-      cotacao.USDBRL.bid
-    );
+    const calculatedValue = CalculateMoneyPurchase(value, tax, iof, cotacao);
     res.status(200).json({
       valor: calculatedValue,
       tax,
       type,
-      dolar: cotacao.USDBRL.bid,
+      dolar: cotacao,
     });
   } else if (type === "card") {
     const calculatedValue = CalculateCreditCardPurchase(

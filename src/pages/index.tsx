@@ -45,9 +45,8 @@ function FormatTime(date: Date): string {
 }
 
 export default function Page() {
-  const [date, setDate] = useState<string>("");
-  const [time, setTime] = useState<string>("");
-  const [cotacao, setCotacao] = useState<CotacaoResponse>();
+  const [dateTime, setDateTime] = useState({ date: "", time: "" });
+  const [dolarValue, setDolarValue] = useState(0);
   const [state, setState] = useState<"CONVERT" | "RESULT">("CONVERT");
   const [convertedValue, setConvertedValue] = useState<number>(0);
   const [tax, setTax] = useState(0);
@@ -64,28 +63,29 @@ export default function Page() {
         tax: percentageTax,
         type: type,
         iof: IOF,
-        cotacao: cotacao,
+        cotacao: dolarValue,
       })
       .then((response) => response.data)
-      .then(({ valor, tax, type, dolar }: ResponseData) => {
+      .then(({ valor, tax, type }: ResponseData) => {
         setConvertedValue(valor);
         setTax(tax);
+        setPaymentMethod(type);
         setState("RESULT");
       });
-    // setPaymentMethod(type);
-    //
   };
 
   useEffect(() => {
     GetCotacao()
       .then((response) => response.data)
       .then((data) => {
-        setCotacao(data);
         let date = new Date(data.USDBRL.timestamp * 1000);
         let formattedDate = FormatDate(date);
         let formattedTime = FormatTime(date);
-        setTime(formattedTime);
-        setDate(formattedDate);
+        setDateTime({
+          date: formattedDate,
+          time: formattedTime,
+        });
+        setDolarValue(data.USDBRL.bid);
       })
       .catch((err) => console.error(err.message));
   }, []);
@@ -96,9 +96,9 @@ export default function Page() {
         <StoneLogo />
         <div className="flex flex-col gap-y-1">
           <div className="flex gap-x-6 text-gray-darker text-lg">
-            <span>{date}</span>
+            <span>{dateTime.date}</span>
             <span>|</span>
-            <span>{time}</span>
+            <span>{dateTime.time}</span>
           </div>
           <div className="text-gray-light text-sm">
             Dados de câmbio disponibilizados pela Morningstar.
@@ -111,7 +111,7 @@ export default function Page() {
         <ResultContent
           onBackButton={() => setState("CONVERT")}
           tax={tax}
-          dolar={cotacao.USDBRL?.bid * 1}
+          dolar={dolarValue}
           convertedValue={convertedValue}
           paymentMethod={paymentMethod}
         />

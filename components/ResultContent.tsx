@@ -15,7 +15,8 @@ interface ResultContentProps {
 }
 
 const formatValue = (value: number) => {
-  return value?.toFixed(2);
+  const numberParsed = Number(value);
+  return numberParsed.toFixed(2);
 };
 
 export function ResultContent({
